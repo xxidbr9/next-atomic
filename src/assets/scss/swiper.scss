@@ -1,0 +1,31 @@
+$size: 5px;
+.swiper-pagination-bullet {
+  opacity: 0.8;
+  background: #ffffff;
+  @media only screen and (min-width: 320px) and(max-width: 1024px) {
+    width: $size;
+    height: $size;
+  }
+}
+
+.swiper-pagination,
+.swiper-pagination-clickable,
+.swiper-pagination-bullets {
+  bottom: 4px;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1;
+  background: #c86b64;
+}
+
+.swiper-slide {
+  overflow: hidden;
+  @media only screen and (min-width: 320px) {
+    width: 276px;
+    border-radius: 5px;
+  }
+  @media only screen and (min-width: 425px) and(max-width:1024px) {
+    width: 366px;
+  }
+}
