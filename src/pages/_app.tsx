@@ -65,12 +65,12 @@ const MainApp = ({ Component, pageProps }) => {
   const dispatch = useDispatch()
   useEffect(() => {
     dispatch(setScreenSize(screen as ScreenType)) // for set the screen type to global redux
-  }, [screen])
+  }, [screen, dispatch])
 
   const mobileOS = useMobileOS()
   useEffect(() => {
     dispatch(setMobileDeviceOS(mobileOS)) // check mobile os
-  }, [mobileOS])
+  }, [mobileOS, dispatch])
 
   return (
     <>
