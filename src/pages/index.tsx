@@ -15,10 +15,7 @@ untuk info lebih lanjut bisa mention ke https://github.com/xxidbr9
 const HomeDefaultPage = () => {
   return (
     <React.Fragment>
-      <Head>
-        <title>{BRAND_NAME}</title>
-      </Head>
-      {/* <HomePage /> */}
+      <div className=""></div>
     </React.Fragment>
   )
 }
