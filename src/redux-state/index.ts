@@ -1,18 +1,19 @@
-import { createStore, applyMiddleware, Store, AnyAction } from "redux";
-import logger from "redux-logger";
+import { createStore, applyMiddleware, Store, AnyAction } from 'redux'
+import logger from 'redux-logger'
 import thunk from 'redux-thunk'
-import { createWrapper, Context, MakeStore } from "next-redux-wrapper";
-import reducer from "./reducer";
-import { IStateType } from "./state";
+import { createWrapper, Context, MakeStore } from 'next-redux-wrapper'
+import reducer from './reducer'
+import { IStateType } from './state'
+import { globalPersistConfig } from './persist'
 
 /* 
 ===== TODO =====
 [ ] Add Redux Saga Feature
-[ ] Add Redux Persist Logic
+[X] Add Redux Persist Logic
 === END TODO ===
 */
 
-const bindMiddleware = (middleware) => {
+const bindMiddleware = middleware => {
   if (process.env.NODE_ENV !== 'production') {
     const { composeWithDevTools } = require('redux-devtools-extension')
     return composeWithDevTools(applyMiddleware(...middleware))
@@ -20,15 +21,41 @@ const bindMiddleware = (middleware) => {
   return applyMiddleware(...middleware)
 }
 
-
 /**
  * Middle ware for development only
- *  */ 
-const isDev = process.env.NODE_ENV !== "production"
+ *  */
+const isDev = process.env.NODE_ENV !== 'production'
+
 const devMiddleware = () => {
-  return isDev ? [logger] : [];
+  return isDev ? [] : []
 }
 
-export const makeStore: MakeStore<Store<IStateType, AnyAction>> = (context: Context) => createStore(reducer, bindMiddleware([thunk, ...devMiddleware()]));
+const makeConfiguredStore = reducer =>
+  createStore(reducer, bindMiddleware([thunk, ...devMiddleware()]))
 
-export const wrapper = createWrapper<Store<IStateType>>(makeStore, { debug: isDev });
+const makeConfiguredClientStore = (reducer, config) => {
+  const { persistReducer, persistStore } = require('redux-persist')
+
+  const persistedReducer = persistReducer(config, reducer)
+
+  const store = makeConfiguredStore(persistedReducer)
+
+  // const newStore = Object.assign(store,{__persistor:persistStore(store)})
+
+  return store
+}
+
+export const makeStore: MakeStore<Store<IStateType, AnyAction>> = (
+  context: Context
+) => {
+  const isServer = typeof window === 'undefined'
+  if (isServer) {
+    return makeConfiguredStore(reducer)
+  } else {
+    return makeConfiguredClientStore(reducer, globalPersistConfig)
+  }
+}
+
+export const wrapper = createWrapper<Store<IStateType>>(makeStore, {
+  debug: isDev,
+})

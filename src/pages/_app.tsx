@@ -13,7 +13,7 @@ import { AppContext } from 'next/app'
 import { ThemeProvider } from '@emotion/react'
 import { createBreakpoint, useEffectOnce } from 'react-use'
 import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useStore } from 'react-redux'
 import SwiperCore, {
   Navigation,
   Pagination,
@@ -38,6 +38,8 @@ import { useRouter } from 'next/router'
 import ReactGA from 'react-ga'
 import Head from 'next/head'
 import BRAND_NAME from '@utils/constants/brand'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistStore } from 'redux-persist'
 
 /* Configuration Start */
 SwiperCore.use([Navigation, Pagination, Scrollbar, A11y, Autoplay])
@@ -61,8 +63,20 @@ const MainApp = ({ Component, pageProps }) => {
   ReactGA.pageview(router.asPath)
   /* Analytic End */
 
-  const screen = useScreen()
+  // Redux config
+  const store = useStore()
+
+  const persistor = persistStore(store, {}, function () {
+    persistor.persist()
+  })
+
+  // const persistor = persistStore(store)
   const dispatch = useDispatch()
+
+  // end redux config
+
+  const screen = useScreen()
+
   useEffect(() => {
     dispatch(setScreenSize(screen as ScreenType)) // for set the screen type to global redux
   }, [screen, dispatch])
@@ -77,21 +91,35 @@ const MainApp = ({ Component, pageProps }) => {
       <Head>{BRAND_NAME}</Head>
       <NProgress color={color.primary['500']} />
       <ThemeProvider theme={theme}>
-        <Component {...pageProps} />
+        {typeof window !== 'undefined' ? (
+          <PersistGate persistor={persistor} loading={<div>Loading</div>}>
+            <Component {...pageProps} />
+          </PersistGate>
+        ) : (
+          <Component {...pageProps} />
+        )}
       </ThemeProvider>
     </>
   )
 }
 
-MainApp.getInitialProps = async ({ Component, ctx }: AppContext) => {
-  return {
-    pageProps: {
-      ...(Component.getInitialProps
-        ? await Component.getInitialProps(ctx)
-        : {}),
-      appProp: ctx.pathname,
-    },
-  }
-}
+MainApp.getInitialProps = wrapper.getInitialAppProps(
+  store =>
+    async ({ Component, ctx }: AppContext) => {
+      return {
+        pageProps: {
+          ...(Component.getInitialProps
+            ? await Component.getInitialProps({ ...ctx, store })
+            : {}),
+          pathname: ctx.pathname,
+        },
+        creator: {
+          url: 'https://github.com/xxidbr9',
+          name: 'Barnando Akbarto Hidaytullah',
+          email: 'barnando13@gmail.com',
+        },
+      }
+    }
+)
 
 export default wrapper.withRedux(MainApp)

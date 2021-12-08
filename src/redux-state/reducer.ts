@@ -1,8 +1,9 @@
-import { blogReducer } from '@features/blog'
+import { combineReducers } from 'redux'
+import { persistReducer } from 'redux-persist'
 import { deviceReducer } from '@features/devices'
 import { exampleReducer } from '@features/example'
 import { screenReducer } from '@features/screen'
-import { combineReducers } from 'redux'
+import { examplePersistConfig } from './persist'
 
 /* 
 ===== TODO =====
@@ -14,10 +15,9 @@ import { combineReducers } from 'redux'
 */
 
 const reducer = combineReducers({
-  example: exampleReducer,
+  example: persistReducer(examplePersistConfig, exampleReducer),
   screen: screenReducer,
   device: deviceReducer,
-  blog: blogReducer,
 })
 
 export default reducer
